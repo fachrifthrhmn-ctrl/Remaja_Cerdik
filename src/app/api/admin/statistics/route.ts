@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/models/User';
 import Material from '@/models/Material';
-import Video from '@/models/Video';
 import Quiz from '@/models/Quiz';
 import Result from '@/models/Result';
 import { requireAdmin } from '@/lib/auth';
@@ -25,7 +24,6 @@ export async function GET(request: NextRequest) {
         const totalUsers = await User.countDocuments({ role: 'user' });
         const totalAdmins = await User.countDocuments({ role: 'admin' });
         const totalMaterials = await Material.countDocuments({});
-        const totalVideos = await Video.countDocuments({});
         const totalQuizzes = await Quiz.countDocuments({});
         const totalAttempts = await Result.countDocuments({});
 
@@ -60,7 +58,6 @@ export async function GET(request: NextRequest) {
                 totalUsers,
                 totalAdmins,
                 totalMaterials,
-                totalVideos,
                 totalQuizzes,
                 totalAttempts,
             },

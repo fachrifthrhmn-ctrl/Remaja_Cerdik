@@ -6,7 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import {
     LayoutDashboard,
     BookOpen,
-    Video,
     ClipboardList,
     BarChart3,
     Users,
@@ -32,7 +31,6 @@ interface NavItem {
 const adminNavItems: NavItem[] = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
     { href: '/admin/materials', label: 'Materi', icon: <BookOpen size={18} /> },
-    { href: '/admin/videos', label: 'Video', icon: <Video size={18} /> },
     { href: '/admin/quizzes', label: 'Kuis', icon: <ClipboardList size={18} /> },
     { href: '/admin/reports', label: 'Laporan', icon: <BarChart3 size={18} /> },
     { href: '/admin/users', label: 'Pengguna', icon: <Users size={18} /> },

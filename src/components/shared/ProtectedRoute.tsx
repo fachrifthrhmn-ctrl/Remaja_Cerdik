@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import LoadingScreen from './LoadingScreen';
 
 interface ProtectedRouteProps {
     children: React.ReactNode;
@@ -29,14 +30,7 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
     }, [user, loading, router, allowedRoles]);
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-white/70">Loading...</p>
-                </div>
-            </div>
-        );
+        return <LoadingScreen fullScreen message="Loading..." />;
     }
 
     if (!user || !allowedRoles.includes(user.role)) {

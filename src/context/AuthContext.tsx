@@ -2,34 +2,19 @@
 
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface User {
-    _id: string;
-    nama: string;
-    email: string;
-    role: 'user' | 'admin';
-    sekolah?: string;
-    usia?: number;
-    token: string;
-}
-
-interface AuthContextType {
-    user: User | null;
-    loading: boolean;
-    login: (email: string, password: string) => Promise<User>;
-    register: (userData: RegisterData) => Promise<User>;
-    logout: () => void;
-}
-
-interface RegisterData {
-    nama: string;
-    email: string;
-    password: string;
-    sekolah?: string;
-    usia?: number;
-}
+import type { User, RegisterData, AuthContextType } from '@/types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper: set cookie (client-side)
+function setCookie(name: string, value: string, days = 30) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function removeCookie(name: string) {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -37,16 +22,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
 
     useEffect(() => {
-        // Check for saved user in localStorage
-        const savedUser = localStorage.getItem('user');
-        if (savedUser) {
-            try {
-                setUser(JSON.parse(savedUser));
-            } catch {
-                localStorage.removeItem('user');
+        const initAuth = async () => {
+            const savedUser = localStorage.getItem('user');
+            if (savedUser) {
+                try {
+                    const parsed = JSON.parse(savedUser) as User;
+
+                    // Validate token via API
+                    const res = await fetch('/api/auth/me', {
+                        headers: { Authorization: `Bearer ${parsed.token}` },
+                    });
+
+                    if (res.ok) {
+                        const freshData = await res.json();
+                        // Update user data from server but keep the token
+                        const updatedUser = { ...freshData, token: parsed.token };
+                        setUser(updatedUser);
+                        localStorage.setItem('user', JSON.stringify(updatedUser));
+                        setCookie('auth-token', parsed.token);
+                    } else {
+                        // Token invalid → auto-logout
+                        localStorage.removeItem('user');
+                        removeCookie('auth-token');
+                    }
+                } catch {
+                    localStorage.removeItem('user');
+                    removeCookie('auth-token');
+                }
             }
-        }
-        setLoading(false);
+            setLoading(false);
+        };
+
+        initAuth();
     }, []);
 
     const login = async (email: string, password: string): Promise<User> => {
@@ -64,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(data);
         localStorage.setItem('user', JSON.stringify(data));
+        setCookie('auth-token', data.token);
         return data;
     };
 
@@ -82,12 +90,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(data);
         localStorage.setItem('user', JSON.stringify(data));
+        setCookie('auth-token', data.token);
         return data;
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem('user');
+        removeCookie('auth-token');
         router.push('/login');
     };
 

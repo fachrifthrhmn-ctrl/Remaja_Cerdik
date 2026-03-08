@@ -28,4 +28,12 @@ export const reportingApi = {
         });
         return handleResponse(response);
     },
+
+    resetUserQuiz: async (userId: string) => {
+        const response = await fetch(`/api/reporting/admin/reset/${userId}`, {
+            method: 'DELETE',
+            headers: { ...getAuthHeader() },
+        });
+        return handleResponse(response);
+    },
 };
