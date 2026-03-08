@@ -1,46 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { Eye, EyeOff, Heart, GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import GuestRoute from '@/components/shared/GuestRoute';
+import { useLoginForm } from '@/hooks/pages/useLoginForm';
 
 export default function LoginPage() {
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
+    return (
+        <GuestRoute>
+            <LoginForm />
+        </GuestRoute>
+    );
+}
 
-    const { login } = useAuth();
-    const router = useRouter();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            const userData = await login(formData.email, formData.password);
-            toast.success(`Selamat datang kembali, ${userData.nama}!`);
-            if (userData.role === 'admin') {
-                router.push('/admin/dashboard');
-            } else {
-                router.push('/student/dashboard');
-            }
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Login gagal');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+function LoginForm() {
+    const {
+        showPassword, setShowPassword,
+        loading, formData,
+        handleSubmit, handleChange,
+    } = useLoginForm();
 
     return (
         <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4">

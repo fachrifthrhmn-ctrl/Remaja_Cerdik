@@ -1,110 +1,29 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { quizzesApi, reportingApi } from '@/lib/api';
 import { ArrowLeft, CheckCircle, XCircle, Award, Trophy, Brain, ClipboardList, HelpCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
 import Link from 'next/link';
-
-interface Question {
-    _id: string;
-    pertanyaan: string;
-    pilihan_ganda: string[];
-}
-
-interface Quiz {
-    _id: string;
-    judul: string;
-    tipe: string;
-    deskripsi: string;
-}
-
-interface SubmitResult {
-    message: string;
-    score: number;
-    totalQuestions: number;
-    correctCount: number;
-    resultId: string;
-}
+import LoadingScreen from '@/components/shared/LoadingScreen';
+import { useTakeQuiz } from '@/hooks/pages/useTakeQuiz';
 
 export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
-    const [quiz, setQuiz] = useState<Quiz | null>(null);
-    const [questions, setQuestions] = useState<Question[]>([]);
-    const [answers, setAnswers] = useState<Record<string, number>>({});
-    const [loading, setLoading] = useState(true);
-    const [submitting, setSubmitting] = useState(false);
-    const [result, setResult] = useState<SubmitResult | null>(null);
-    const [canTake, setCanTake] = useState(true);
     const router = useRouter();
+    const {
+        answers, result,
+        quiz, questions,
+        loadingQuiz, isQuizError,
+        submitMutation,
+        handleAnswer, handleSubmit,
+    } = useTakeQuiz(resolvedParams.id);
 
-    useEffect(() => { loadQuiz(); }, [resolvedParams.id]);
+    if (loadingQuiz) return <LoadingScreen message="Memuat kuis..." color="border-amber-500" />;
 
-    const loadQuiz = async () => {
-        try {
-            // Check prerequisite
-            const prereq = await reportingApi.checkPrerequisite(resolvedParams.id) as { canTake: boolean; message: string };
-            if (!prereq.canTake) {
-                toast.error(prereq.message);
-                setCanTake(false);
-                router.push('/student/quizzes');
-                return;
-            }
+    const totalQuestions = questions.length;
 
-            const [quizData, questionsData] = await Promise.all([
-                quizzesApi.getById(resolvedParams.id),
-                quizzesApi.getQuestions(resolvedParams.id),
-            ]);
-            setQuiz(quizData as Quiz);
-            setQuestions(questionsData as Question[]);
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Gagal memuat kuis');
-            router.push('/student/quizzes');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleAnswer = (questionId: string, answerIndex: number) => {
-        setAnswers(prev => ({ ...prev, [questionId]: answerIndex }));
-    };
-
-    const handleSubmit = async () => {
-        if (Object.keys(answers).length !== questions.length) {
-            toast.error('Harap jawab semua pertanyaan');
-            return;
-        }
-
-        setSubmitting(true);
-        try {
-            const formattedAnswers = Object.entries(answers).map(([soal_id, jawaban_user]) => ({
-                soal_id,
-                jawaban_user,
-            }));
-            const submitResult = await quizzesApi.submit(resolvedParams.id, formattedAnswers) as SubmitResult;
-            setResult(submitResult);
-            toast.success('Kuis berhasil diselesaikan!');
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Gagal mengirim jawaban');
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-slate-500 font-bold">Memuat kuis...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!canTake || !quiz) return null;
+    if (isQuizError || !quiz) return null;
 
     // Result screen
     if (result) {
@@ -298,13 +217,13 @@ export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                     onClick={handleSubmit}
-                    disabled={submitting || Object.keys(answers).length !== questions.length}
+                    disabled={submitMutation.isPending || Object.keys(answers).length !== questions.length}
                     className={`w-full py-5 rounded-2xl font-black text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl ${isPreTest
                         ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600'
                         : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600'
                         }`}
                 >
-                    {submitting ? (
+                    {submitMutation.isPending ? (
                         <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
                     ) : (
                         <>Kirim Jawaban ({Object.keys(answers).length}/{questions.length})</>

@@ -1,58 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { reportingApi } from '@/lib/api';
-import { BarChart3, Search, Calendar, Award, TrendingUp } from 'lucide-react';
-import toast from 'react-hot-toast';
+import Modal from '@/components/shared/Modal';
+import SearchInput from '@/components/shared/SearchInput';
+import LoadingScreen from '@/components/shared/LoadingScreen';
+import StatCard from '@/components/shared/StatCard';
+import { BarChart3, Calendar, Award, TrendingUp, RotateCcw } from 'lucide-react';
 import { motion } from 'framer-motion';
-
-interface Result {
-    _id: string;
-    skor: number;
-    tanggal_selesai: string;
-    user_id: { nama: string; email: string; sekolah: string };
-    kuis_id: { judul: string; tipe: string };
-}
+import { useManageReports } from '@/hooks/pages/useManageReports';
 
 export default function ManageReports() {
-    const [results, setResults] = useState<Result[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState('');
+    const {
+        search, setSearch,
+        showResetModal, setShowResetModal,
+        resetTarget,
+        results, isLoading,
+        resetMutation,
+        filteredResults, avgScore, passCount, uniqueUsers,
+        openResetModal, handleResetQuiz,
+    } = useManageReports();
 
-    useEffect(() => { loadResults(); }, []);
-
-    const loadResults = async () => {
-        try {
-            const data = await reportingApi.getAdminRecap() as Result[];
-            setResults(data);
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Gagal memuat laporan');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const filteredResults = results.filter(r =>
-        r.user_id?.nama?.toLowerCase().includes(search.toLowerCase()) ||
-        r.kuis_id?.judul?.toLowerCase().includes(search.toLowerCase())
-    );
-
-    // Calculate stats
-    const avgScore = results.length > 0
-        ? Math.round(results.reduce((sum, r) => sum + r.skor, 0) / results.length)
-        : 0;
-    const passCount = results.filter(r => r.skor >= 70).length;
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-[50vh]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-gray-500 font-medium">Memuat laporan...</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return <LoadingScreen message="Memuat laporan..." color="border-indigo-500" />;
 
     return (
         <div className="space-y-6">
@@ -66,66 +33,13 @@ export default function ManageReports() {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
-                            <BarChart3 size={24} className="text-indigo-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">{results.length}</p>
-                            <p className="text-sm text-gray-500">Total Hasil</p>
-                        </div>
-                    </div>
-                </motion.div>
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-                            <Award size={24} className="text-amber-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">{avgScore}%</p>
-                            <p className="text-sm text-gray-500">Rata-rata Skor</p>
-                        </div>
-                    </div>
-                </motion.div>
-                <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                            <TrendingUp size={24} className="text-emerald-600" />
-                        </div>
-                        <div>
-                            <p className="text-2xl font-bold text-gray-800">{passCount}</p>
-                            <p className="text-sm text-gray-500">Lulus (≥70%)</p>
-                        </div>
-                    </div>
-                </motion.div>
+                <StatCard icon={BarChart3} label="Total Hasil" value={results.length} iconBgColor="bg-indigo-100" iconColor="text-indigo-600" />
+                <StatCard icon={Award} label="Rata-rata Skor" value={`${avgScore}%`} iconBgColor="bg-amber-100" iconColor="text-amber-600" delay={0.1} />
+                <StatCard icon={TrendingUp} label="Lulus (≥70%)" value={passCount} iconBgColor="bg-emerald-100" iconColor="text-emerald-600" delay={0.2} />
             </div>
 
             {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Cari nama siswa atau kuis..."
-                    className="w-full h-12 pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                />
-            </div>
+            <SearchInput value={search} onChange={setSearch} placeholder="Cari nama siswa atau kuis..." />
 
             {/* Results Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -139,6 +53,7 @@ export default function ManageReports() {
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Skor</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -159,8 +74,8 @@ export default function ManageReports() {
                                     <td className="px-6 py-4 font-medium text-gray-800">{result.kuis_id?.judul}</td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${result.kuis_id?.tipe === 'pre-test'
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-amber-100 text-amber-700'
+                                            ? 'bg-blue-100 text-blue-700'
+                                            : 'bg-amber-100 text-amber-700'
                                             }`}>
                                             {result.kuis_id?.tipe}
                                         </span>
@@ -176,6 +91,15 @@ export default function ManageReports() {
                                             {new Date(result.tanggal_selesai).toLocaleDateString('id-ID')}
                                         </div>
                                     </td>
+                                    <td className="px-6 py-4">
+                                        <button
+                                            onClick={() => openResetModal(result.user_id?._id, result.user_id?.nama)}
+                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Reset semua kuis user ini"
+                                        >
+                                            <RotateCcw size={16} />
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -189,6 +113,44 @@ export default function ManageReports() {
                     </div>
                 )}
             </div>
+
+            {/* Reset Confirmation Modal */}
+            <Modal isOpen={showResetModal} onClose={() => setShowResetModal(false)} title="Reset Kuis" size="sm">
+                <div className="space-y-4">
+                    <div className="flex items-center justify-center">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                            <RotateCcw size={32} className="text-red-500" />
+                        </div>
+                    </div>
+                    <p className="text-center text-gray-600">
+                        Apakah Anda yakin ingin mereset <strong>semua hasil kuis</strong> milik <strong className="text-red-600">{resetTarget?.nama}</strong>?
+                    </p>
+                    <p className="text-center text-sm text-gray-400">
+                        Tindakan ini tidak dapat dibatalkan. User harus mengerjakan kuis ulang.
+                    </p>
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="button"
+                            onClick={() => setShowResetModal(false)}
+                            className="flex-1 h-12 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-bold text-sm transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleResetQuiz}
+                            disabled={resetMutation.isPending}
+                            className="flex-1 h-12 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-red-500/20 transition-all disabled:opacity-50"
+                        >
+                            {resetMutation.isPending ? (
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+                            ) : (
+                                'Ya, Reset'
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

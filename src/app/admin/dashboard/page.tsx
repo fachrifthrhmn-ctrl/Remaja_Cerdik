@@ -1,14 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { adminApi } from '@/lib/api';
-import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 import {
     Users,
     BookOpen,
-    Video,
     ClipboardList,
     TrendingUp,
     Award,
@@ -19,7 +15,8 @@ import {
     Calendar,
     GraduationCap
 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import LoadingScreen from '@/components/shared/LoadingScreen';
+import { useAdminDashboard } from '@/hooks/pages/useAdminDashboard';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -47,63 +44,10 @@ ChartJS.register(
     ArcElement
 );
 
-interface Statistics {
-    counts: {
-        totalUsers: number;
-        totalAdmins: number;
-        totalMaterials: number;
-        totalVideos: number;
-        totalQuizzes: number;
-        totalAttempts: number;
-    };
-    averageScore: number;
-    recentResults: Array<{
-        _id: string;
-        skor: number;
-        tanggal_selesai: string;
-        user_id: { nama: string; email: string; sekolah: string };
-        kuis_id: { judul: string; tipe: string };
-    }>;
-    recentUsers: Array<{
-        _id: string;
-        nama: string;
-        email: string;
-        sekolah: string;
-        createdAt: string;
-    }>;
-}
-
 export default function AdminDashboard() {
-    const { user } = useAuth();
-    const [stats, setStats] = useState<Statistics | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'results' | 'users'>('results');
+    const { user, activeTab, setActiveTab, stats, isLoading, barData, doughnutData } = useAdminDashboard();
 
-    useEffect(() => {
-        loadStatistics();
-    }, []);
-
-    const loadStatistics = async () => {
-        try {
-            const data = await adminApi.getStatistics() as Statistics;
-            setStats(data);
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Gagal memuat statistik');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-[60vh]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-gray-500 font-medium">Memuat data...</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return <LoadingScreen message="Memuat data..." />;
 
     const statCards = [
         {
@@ -119,13 +63,6 @@ export default function AdminDashboard() {
             value: stats?.counts.totalMaterials || 0,
             gradient: 'from-emerald-500 to-teal-400',
             shadowColor: 'shadow-emerald-500/30'
-        },
-        {
-            icon: <Video size={24} />,
-            label: 'Video Pembelajaran',
-            value: stats?.counts.totalVideos || 0,
-            gradient: 'from-purple-500 to-violet-400',
-            shadowColor: 'shadow-purple-500/30'
         },
         {
             icon: <ClipboardList size={24} />,
@@ -150,56 +87,8 @@ export default function AdminDashboard() {
         },
     ];
 
-    // Chart Data
-    const barData = {
-        labels: ['Siswa', 'Materi', 'Video', 'Kuis', 'Percobaan'],
-        datasets: [
-            {
-                label: 'Jumlah Data',
-                data: [
-                    stats?.counts.totalUsers || 0,
-                    stats?.counts.totalMaterials || 0,
-                    stats?.counts.totalVideos || 0,
-                    stats?.counts.totalQuizzes || 0,
-                    stats?.counts.totalAttempts || 0,
-                ],
-                backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)',
-                    'rgba(16, 185, 129, 0.8)',
-                    'rgba(139, 92, 246, 0.8)',
-                    'rgba(245, 158, 11, 0.8)',
-                    'rgba(244, 63, 94, 0.8)',
-                ],
-                borderRadius: 8,
-                borderSkipped: false,
-            },
-        ],
-    };
-
-    const doughnutData = {
-        labels: ['Materi', 'Video', 'Kuis'],
-        datasets: [
-            {
-                data: [
-                    stats?.counts.totalMaterials || 0,
-                    stats?.counts.totalVideos || 0,
-                    stats?.counts.totalQuizzes || 0,
-                ],
-                backgroundColor: [
-                    'rgba(16, 185, 129, 0.9)',
-                    'rgba(139, 92, 246, 0.9)',
-                    'rgba(245, 158, 11, 0.9)',
-                ],
-                borderColor: 'white',
-                borderWidth: 4,
-                hoverOffset: 8,
-            },
-        ],
-    };
-
     const quickActions = [
         { label: 'Tambah Materi', href: '/admin/materials', icon: <BookOpen size={18} />, color: 'bg-emerald-500 hover:bg-emerald-600' },
-        { label: 'Tambah Video', href: '/admin/videos', icon: <Video size={18} />, color: 'bg-purple-500 hover:bg-purple-600' },
         { label: 'Kelola Kuis', href: '/admin/quizzes', icon: <ClipboardList size={18} />, color: 'bg-amber-500 hover:bg-amber-600' },
     ];
 
@@ -378,8 +267,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('results')}
                         className={`flex-1 px-6 py-4 text-sm font-bold transition-colors ${activeTab === 'results'
-                                ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50/50'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50/50'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
                     >
                         <div className="flex items-center justify-center gap-2">
@@ -390,8 +279,8 @@ export default function AdminDashboard() {
                     <button
                         onClick={() => setActiveTab('users')}
                         className={`flex-1 px-6 py-4 text-sm font-bold transition-colors ${activeTab === 'users'
-                                ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                            ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                             }`}
                     >
                         <div className="flex items-center justify-center gap-2">
@@ -419,8 +308,8 @@ export default function AdminDashboard() {
                                         </div>
                                         <div className="text-right">
                                             <span className={`inline-block px-3 py-1.5 rounded-xl text-sm font-bold ${result.skor >= 70
-                                                    ? 'bg-emerald-100 text-emerald-700'
-                                                    : 'bg-orange-100 text-orange-700'
+                                                ? 'bg-emerald-100 text-emerald-700'
+                                                : 'bg-orange-100 text-orange-700'
                                                 }`}>
                                                 {result.skor} Poin
                                             </span>

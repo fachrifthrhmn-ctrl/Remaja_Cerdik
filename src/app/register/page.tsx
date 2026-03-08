@@ -1,51 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
 import { motion } from 'framer-motion';
-import toast from 'react-hot-toast';
 import { Eye, EyeOff, Heart, ArrowRight, User, GraduationCap, School } from 'lucide-react';
 import Link from 'next/link';
+import GuestRoute from '@/components/shared/GuestRoute';
+import { useRegisterForm } from '@/hooks/pages/useRegisterForm';
 
 export default function RegisterPage() {
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        nama: '',
-        email: '',
-        password: '',
-        sekolah: '',
-        usia: '',
-    });
+    return (
+        <GuestRoute>
+            <RegisterForm />
+        </GuestRoute>
+    );
+}
 
-    const { register } = useAuth();
-    const router = useRouter();
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
-        try {
-            const userData = await register({
-                nama: formData.nama,
-                email: formData.email,
-                password: formData.password,
-                sekolah: formData.sekolah,
-                usia: parseInt(formData.usia),
-            });
-            toast.success(`Akun berhasil dibuat! Selamat datang, ${userData.nama}!`);
-            router.push('/student/dashboard');
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Terjadi kesalahan saat pendaftaran');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+function RegisterForm() {
+    const {
+        showPassword, setShowPassword,
+        loading, formData,
+        handleSubmit, handleChange,
+    } = useRegisterForm();
 
     return (
         <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-4 py-12">

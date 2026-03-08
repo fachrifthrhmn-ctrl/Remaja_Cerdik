@@ -1,92 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { quizzesApi, reportingApi } from '@/lib/api';
 import { ClipboardList, Lock, CheckCircle, ArrowRight, AlertCircle, Sparkles, Brain, Trophy, Target, Zap } from 'lucide-react';
-import toast from 'react-hot-toast';
-
-interface Quiz {
-    _id: string;
-    judul: string;
-    tipe: string;
-    deskripsi: string;
-}
-
-interface QuizStatus {
-    quizId: string;
-    judul: string;
-    tipe: string;
-    isCompleted: boolean;
-    score: number | null;
-}
-
-interface CompletionData {
-    quizStatus: QuizStatus[];
-    hasCompletedPretest: boolean;
-    canTakePosttest: boolean;
-}
+import LoadingScreen from '@/components/shared/LoadingScreen';
+import { useStudentQuizzes } from '@/hooks/pages/useStudentQuizzes';
 
 export default function StudentQuizzes() {
-    const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-    const [completionData, setCompletionData] = useState<CompletionData | null>(null);
-    const [loading, setLoading] = useState(true);
+    const {
+        quizzes, completionData, isLoading,
+        getQuizStatus, canTakeQuiz,
+        completedCount, totalQuizzes, progressPercent,
+        avgScore, pretests, posttests,
+    } = useStudentQuizzes();
 
-    useEffect(() => { loadData(); }, []);
-
-    const loadData = async () => {
-        try {
-            const [quizzesData, completionStatus] = await Promise.all([
-                quizzesApi.getAll(),
-                reportingApi.getCompletionStatus(),
-            ]);
-            setQuizzes(quizzesData as Quiz[]);
-            setCompletionData(completionStatus as CompletionData);
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Gagal memuat data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const getQuizStatus = (quizId: string) => {
-        return completionData?.quizStatus.find(q => q.quizId === quizId);
-    };
-
-    const canTakeQuiz = (quiz: Quiz) => {
-        const status = getQuizStatus(quiz._id);
-        if (status?.isCompleted) return { can: false, reason: 'completed' };
-        if (quiz.tipe === 'post-test' && !completionData?.hasCompletedPretest) {
-            return { can: false, reason: 'locked' };
-        }
-        return { can: true, reason: 'available' };
-    };
-
-    // Calculate progress
-    const completedCount = completionData?.quizStatus.filter(q => q.isCompleted).length || 0;
-    const totalQuizzes = quizzes.length;
-    const progressPercent = totalQuizzes > 0 ? Math.round((completedCount / totalQuizzes) * 100) : 0;
-
-    // Calculate average score
-    const completedQuizzes = completionData?.quizStatus.filter(q => q.isCompleted && q.score !== null) || [];
-    const avgScore = completedQuizzes.length > 0
-        ? Math.round(completedQuizzes.reduce((sum, q) => sum + (q.score || 0), 0) / completedQuizzes.length)
-        : 0;
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-slate-500 font-bold">Memuat kuis...</p>
-                </div>
-            </div>
-        );
-    }
-
-    const pretests = quizzes.filter(q => q.tipe === 'pre-test');
-    const posttests = quizzes.filter(q => q.tipe === 'post-test');
+    if (isLoading) return <LoadingScreen message="Memuat kuis..." color="border-amber-500" />;
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
@@ -297,10 +225,10 @@ export default function StudentQuizzes() {
                                 >
                                     <div className="flex justify-between items-start mb-4">
                                         <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white shadow-lg ${reason === 'locked'
-                                                ? 'bg-slate-400'
-                                                : status?.isCompleted
-                                                    ? 'bg-emerald-500'
-                                                    : 'bg-amber-500'
+                                            ? 'bg-slate-400'
+                                            : status?.isCompleted
+                                                ? 'bg-emerald-500'
+                                                : 'bg-amber-500'
                                             }`}>
                                             {reason === 'locked'
                                                 ? <Lock size={24} />

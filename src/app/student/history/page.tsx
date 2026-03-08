@@ -1,56 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { reportingApi } from '@/lib/api';
 import { History, Calendar, Award, TrendingUp, Trophy, ArrowLeft, Brain, ClipboardList, LayoutGrid } from 'lucide-react';
-import toast from 'react-hot-toast';
 import Link from 'next/link';
-
-interface HistoryItem {
-    _id: string;
-    skor: number;
-    tanggal_selesai: string;
-    kuis_id: { judul: string; tipe: string };
-}
+import LoadingScreen from '@/components/shared/LoadingScreen';
+import { useStudentHistory } from '@/hooks/pages/useStudentHistory';
 
 export default function StudentHistory() {
-    const [history, setHistory] = useState<HistoryItem[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { history, isLoading, averageScore, highestScore, passedCount } = useStudentHistory();
 
-    useEffect(() => { loadHistory(); }, []);
-
-    const loadHistory = async () => {
-        try {
-            const data = await reportingApi.getHistory() as HistoryItem[];
-            setHistory(data);
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Gagal memuat riwayat');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const averageScore = history.length > 0
-        ? Math.round(history.reduce((acc, h) => acc + (h.skor ?? 0), 0) / history.length)
-        : 0;
-
-    const highestScore = history.length > 0
-        ? Math.max(...history.map(h => h.skor ?? 0))
-        : 0;
-
-    const passedCount = history.filter(h => (h.skor ?? 0) >= 70).length;
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[60vh]">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                    <p className="text-slate-500 font-bold">Memuat riwayat...</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return <LoadingScreen message="Memuat riwayat..." />;
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12 space-y-10">
@@ -164,8 +123,8 @@ export default function StudentHistory() {
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isPreTest
-                                            ? 'bg-gradient-to-br from-blue-500 to-cyan-500'
-                                            : 'bg-gradient-to-br from-amber-500 to-orange-500'
+                                        ? 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                                        : 'bg-gradient-to-br from-amber-500 to-orange-500'
                                         }`}>
                                         {isPreTest ? <Brain size={24} className="text-white" /> : <ClipboardList size={24} className="text-white" />}
                                     </div>
@@ -173,8 +132,8 @@ export default function StudentHistory() {
                                         <h3 className="text-lg font-black text-[#1e4d7b]">{item.kuis_id?.judul || 'Kuis'}</h3>
                                         <div className="flex flex-wrap items-center gap-3 mt-1">
                                             <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${isPreTest
-                                                    ? 'bg-blue-100 text-blue-600'
-                                                    : 'bg-amber-100 text-amber-600'
+                                                ? 'bg-blue-100 text-blue-600'
+                                                : 'bg-amber-100 text-amber-600'
                                                 }`}>
                                                 {item.kuis_id?.tipe || 'Quiz'}
                                             </span>
@@ -196,8 +155,8 @@ export default function StudentHistory() {
                                             {item.skor ?? 0}%
                                         </p>
                                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest ${isPassed
-                                                ? 'bg-emerald-100 text-emerald-600'
-                                                : 'bg-amber-100 text-amber-600'
+                                            ? 'bg-emerald-100 text-emerald-600'
+                                            : 'bg-amber-100 text-amber-600'
                                             }`}>
                                             {isPassed ? 'Lulus' : 'Perlu Belajar'}
                                         </span>
