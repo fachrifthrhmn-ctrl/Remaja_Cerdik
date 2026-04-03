@@ -56,6 +56,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         initAuth();
     }, []);
 
+    // ─── Session Timeout (paling ringan) ──────────────────────────────────
+    useEffect(() => {
+        if (!user) return; // hanya aktif saat user sudah login
+
+        const TIMEOUT_MS = 30 * 60 * 1000; // 30 menit
+        let timer: ReturnType<typeof setTimeout>;
+
+        const resetTimer = () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                // Hapus sesi dan redirect ke login
+                setUser(null);
+                localStorage.removeItem('user');
+                document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                router.push('/login');
+            }, TIMEOUT_MS);
+        };
+
+        // Hanya 2 event paling ringan — tidak pakai mousemove/scroll
+        window.addEventListener('click', resetTimer);
+        window.addEventListener('keydown', resetTimer);
+        resetTimer(); // mulai timer saat pertama kali login
+
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('click', resetTimer);
+            window.removeEventListener('keydown', resetTimer);
+        };
+    }, [user, router]);
+
     const login = async (email: string, password: string): Promise<User> => {
         const response = await fetch('/api/auth/login', {
             method: 'POST',

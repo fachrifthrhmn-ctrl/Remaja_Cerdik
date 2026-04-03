@@ -6,19 +6,21 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
+    Activity,
     ChevronRight,
     Heart,
     Apple,
     Bike,
     Ban,
     Wind,
-    Play,
     CheckCircle2,
     Droplets,
     Moon,
     BookOpen,
     ClipboardList,
-    ArrowRight
+    ArrowRight,
+    Calendar1,
+    CalendarArrowDownIcon
 } from 'lucide-react';
 import { materialsApi, reportingApi } from '@/lib/api';
 import Hero from '@/components/student/Hero';
@@ -56,8 +58,15 @@ export default function StudentDashboard() {
             const materialsData = allMaterials as Material[];
             const quizStatus = (completionData as any).quizStatus || [];
 
+            // Find PTM material specifically to ensure the hook always finds it
+            const ptmMaterial = materialsData.find(m =>
+                m.judul.toLowerCase().includes('ptm') ||
+                m.judul.toLowerCase().includes('penyakit tidak menular')
+            );
+
             return {
                 materials: materialsData.slice(0, 4),
+                ptmMaterialId: ptmMaterial?._id || '',
                 stats: {
                     materials: materialsData.length,
                     quizzes: quizStatus.length,
@@ -68,7 +77,21 @@ export default function StudentDashboard() {
     });
 
     const materials = data?.materials || [];
+    const ptmMaterialId = data?.ptmMaterialId || '';
     const stats = data?.stats || { materials: 0, quizzes: 0, completed: 0 };
+
+    useEffect(() => {
+        const ctx = gsap.context(() => {
+            ScrollSmoother.create({
+                wrapper: "#smooth-wrapper",
+                content: "#smooth-content",
+                smooth: 1.5,
+                effects: true
+            });
+        });
+
+        return () => ctx.revert();
+    }, []);
 
     const itemVariants = {
         hidden: { y: 20, opacity: 0 },
@@ -149,69 +172,48 @@ export default function StudentDashboard() {
                     <section id="materials" className="py-24 px-6 scroll-mt-20">
                         <div className="max-w-7xl mx-auto text-center mb-16 px-4">
                             <span className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-xs font-black uppercase tracking-widest mb-4">
-                                Materi Pembelajaran
+                                Materi Utama
                             </span>
-                            <h2 className="text-4xl font-black text-[#1e4d7b] mb-4">Kenali Berbagai Penyakit Tidak Menular</h2>
-                            <p className="text-slate-500 font-bold max-w-2xl mx-auto">Pelajari lebih dalam mengenai bahaya dan cara pencegahan penyakit berikut ini.</p>
+                            <h2 className="text-4xl font-black text-[#1e4d7b] mb-4">Mengenal Penyakit Tidak Menular</h2>
+                            <p className="text-slate-500 font-bold max-w-2xl mx-auto">Pelajari lebih dalam mengenai definisi, jenis, faktor risiko, dan cara pencegahan Penyakit Tidak Menular (PTM) di sini.</p>
                         </div>
 
-                        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                            {materials.map((m, i) => {
-                                const CategoryIcon = CATEGORY_ICONS[m.kategori]?.icon || Heart;
-                                const bgColors = {
-                                    'Diabetes': 'bg-blue-50 hover:bg-blue-100',
-                                    'Hipertensi': 'bg-rose-50 hover:bg-rose-100',
-                                    'Obesitas': 'bg-amber-50 hover:bg-amber-100',
-                                    'Jantung': 'bg-red-50 hover:bg-red-100'
-                                };
-                                const btnColors = {
-                                    'Diabetes': 'bg-blue-500 hover:bg-blue-600 shadow-blue-500/30',
-                                    'Hipertensi': 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30',
-                                    'Obesitas': 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/30',
-                                    'Jantung': 'bg-red-500 hover:bg-red-600 shadow-red-500/30'
-                                };
-                                const iconColors = {
-                                    'Diabetes': 'bg-blue-500',
-                                    'Hipertensi': 'bg-rose-500',
-                                    'Obesitas': 'bg-amber-500',
-                                    'Jantung': 'bg-red-500'
-                                };
-
-                                return (
-                                    <motion.div
-                                        key={m._id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        viewport={{ once: true }}
-                                        transition={{ delay: i * 0.1 }}
-                                        whileHover={{ y: -8 }}
-                                        className={`rounded-3xl p-8 border-2 border-white flex flex-col items-center text-center transition-all duration-300 shadow-lg ${bgColors[m.kategori as keyof typeof bgColors]}`}
-                                    >
-                                        <div className={`w-20 h-20 mb-6 rounded-2xl flex items-center justify-center ${iconColors[m.kategori as keyof typeof iconColors]} text-white shadow-xl`}>
-                                            <CategoryIcon size={36} />
-                                        </div>
-                                        <h3 className="text-2xl font-black text-[#1e4d7b] mb-3">{m.kategori}</h3>
-                                        <p className="text-sm text-slate-500 font-medium mb-6 line-clamp-2">{m.konten_teks}</p>
-                                        <Link
-                                            href={`/student/materials/${m._id}`}
-                                            className={`w-full py-3.5 rounded-2xl text-white font-black text-sm transition-all active:scale-95 shadow-lg ${btnColors[m.kategori as keyof typeof btnColors]}`}
-                                        >
-                                            Pelajari Materi
-                                        </Link>
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
-
-                        {/* View All Link */}
-                        <div className="text-center mt-12">
-                            <Link
-                                href="/student/materials"
-                                className="inline-flex items-center gap-2 text-[#1e4d7b] font-black text-sm uppercase tracking-widest hover:gap-4 transition-all group"
+                        <div className="max-w-4xl mx-auto">
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                viewport={{ once: true }}
+                                className="bg-gradient-to-br from-blue-500 to-[#1e4d7b] rounded-[3rem] p-10 md:p-14 text-white shadow-2xl relative overflow-hidden flex flex-col items-center text-center"
                             >
-                                Lihat Semua Materi
-                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                            </Link>
+                                {/* Decorative elements */}
+                                <div className="absolute top-0 right-0 w-80 h-80 bg-blue-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                                <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan-300/20 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3" />
+
+                                <div className="w-24 h-24 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center text-cyan-200 mb-8 border border-white/20 shadow-inner">
+                                    <BookOpen size={48} />
+                                </div>
+
+                                <h3 className="text-3xl md:text-4xl font-black mb-6 relative z-10 leading-tight">
+                                    Pengenalan & Bahaya PTM <br className="hidden md:block" />(Penyakit Tidak Menular)
+                                </h3>
+
+                                <p className="text-blue-100 font-medium text-lg mb-10 max-w-2xl relative z-10">
+                                    Materi ini merangkum seluruh informasi penting dari WHO dan Kemenkes RI mengenai bahaya PTM hingga panduan pencegahannya.
+                                </p>
+
+                                <Link
+                                    href={ptmMaterialId ? `/student/materials/${ptmMaterialId}` : '/student/materials'}
+                                    onClick={() => {
+                                        if (!ptmMaterialId) {
+                                            alert("Materi PTM belum ditambahkan oleh Admin. Mengarahkan ke daftar materi umum.");
+                                        }
+                                    }}
+                                    className="relative z-10 bg-white text-[#1e4d7b] px-10 py-5 rounded-2xl font-black text-base uppercase tracking-widest flex items-center gap-4 hover:gap-6 hover:scale-105 active:scale-95 transition-all shadow-xl group"
+                                >
+                                    Mulai Belajar
+                                    <ArrowRight size={24} className="group-hover:translate-x-1 transition-transform text-blue-500" />
+                                </Link>
+                            </motion.div>
                         </div>
                     </section>
 
@@ -225,12 +227,14 @@ export default function StudentDashboard() {
                             <p className="text-slate-500 font-bold max-w-2xl mx-auto">Lakukan kebiasaan sehat ini setiap hari agar tubuh tetap cerdik dan berstamina.</p>
                         </div>
 
-                        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-6">
                             {[
-                                { title: "Makan Sehat", desc: "Perbanyak sayur & buah", icon: Apple, color: "from-rose-500 to-pink-500" },
-                                { title: "Rajin Olahraga", desc: "Minimal 30 menit/hari", icon: Bike, color: "from-emerald-500 to-teal-500" },
-                                { title: "Hindari Rokok", desc: "Jauhi asap rokok", icon: Ban, color: "from-slate-600 to-slate-800" },
-                                { title: "Kelola Stres", desc: "Istirahat yang cukup", icon: Wind, color: "from-blue-500 to-cyan-500" }
+                                { title: "Cek Kesehatan", desc: "Periksa tensi & gula darah", icon: Activity, color: "from-blue-500 to-cyan-500" },
+                                { title: "Enyahkan Asap Rokok", desc: "Jauhi paparan asap rokok", icon: Ban, color: "from-slate-600 to-slate-800" },
+                                { title: "Rajin Olahraga", desc: "Aktivitas fisik 30 menit/hari", icon: Bike, color: "from-emerald-500 to-teal-500" },
+                                { title: "Diet Seimbang", desc: "Perbanyak sayur & buah", icon: Apple, color: "from-rose-500 to-pink-500" },
+                                { title: "Istirahat Cukup", desc: "Tidur 7-8 jam per malam", icon: Moon, color: "from-indigo-500 to-purple-500" },
+                                { title: "Kelola Stres", desc: "Berpikir positif & refreshing", icon: Wind, color: "from-amber-500 to-orange-500" }
                             ].map((p, i) => (
                                 <motion.div
                                     key={i}
@@ -241,37 +245,12 @@ export default function StudentDashboard() {
                                     whileHover={{ y: -5 }}
                                     className="bg-white rounded-3xl p-8 flex flex-col items-center gap-4 group shadow-lg border border-gray-100"
                                 >
-                                    <div className={`w-16 h-16 bg-gradient-to-br ${p.color} rounded-2xl flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300`}>
+                                    <div className={`w-16 h-16 bg-gradient-to-br ${p.color} rounded-2xl flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
                                         <p.icon size={28} />
                                     </div>
                                     <div className="text-center">
-                                        <span className="block text-sm font-black text-[#1e4d7b] mb-1">{p.title}</span>
+                                        <span className="block text-sm md:text-base font-black text-[#1e4d7b] mb-1">{p.title}</span>
                                         <span className="text-xs text-slate-400 font-medium">{p.desc}</span>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* Additional Tips */}
-                        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6 mt-12">
-                            {[
-                                { title: "Minum Air Putih", desc: "8 gelas per hari untuk menjaga hidrasi tubuh", icon: Droplets, color: "from-cyan-500 to-blue-500" },
-                                { title: "Tidur Cukup", desc: "7-9 jam per malam untuk regenerasi sel", icon: Moon, color: "from-indigo-500 to-purple-500" }
-                            ].map((p, i) => (
-                                <motion.div
-                                    key={i}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="bg-white rounded-3xl p-6 flex items-center gap-6 group shadow-lg border border-gray-100"
-                                >
-                                    <div className={`w-14 h-14 bg-gradient-to-br ${p.color} rounded-2xl flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-transform flex-shrink-0`}>
-                                        <p.icon size={24} />
-                                    </div>
-                                    <div>
-                                        <span className="block text-lg font-black text-[#1e4d7b]">{p.title}</span>
-                                        <span className="text-sm text-slate-500 font-medium">{p.desc}</span>
                                     </div>
                                 </motion.div>
                             ))}
@@ -281,7 +260,7 @@ export default function StudentDashboard() {
 
 
                     {/* --- CTA SECTION --- */}
-                    <section className="max-w-7xl mx-auto px-6 pb-12">
+                    <section className="max-w-7xl mx-auto px-6 pt-24 pb-12">
                         <div className="bg-gradient-to-r from-[#1e4d7b] via-[#2a6094] to-[#1e4d7b] rounded-3xl p-12 text-center text-white relative overflow-hidden">
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}

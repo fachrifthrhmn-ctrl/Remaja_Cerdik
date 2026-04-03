@@ -337,7 +337,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div>
                                                 <p className="font-bold text-gray-800">{user.nama}</p>
-                                                <p className="text-sm text-gray-500">{user.sekolah || user.email}</p>
+                                                <p className="text-sm text-gray-500">{user.kelas || user.email}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">

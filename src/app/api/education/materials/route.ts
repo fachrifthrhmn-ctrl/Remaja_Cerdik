@@ -41,11 +41,10 @@ export async function POST(request: NextRequest) {
         }
 
         await connectDB();
-        const { judul, kategori, konten_teks, url_gambar } = await request.json();
+        const { judul, konten_teks, url_gambar } = await request.json();
 
         const material = await Material.create({
             judul,
-            kategori,
             konten_teks,
             url_gambar,
         });

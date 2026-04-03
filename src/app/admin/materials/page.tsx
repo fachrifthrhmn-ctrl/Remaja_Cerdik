@@ -5,7 +5,7 @@ import Modal from '@/components/shared/Modal';
 import SearchInput from '@/components/shared/SearchInput';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import { Plus, Edit2, Trash2, BookOpen, FileText, Loader2 } from 'lucide-react';
-import { useManageMaterials, CATEGORIES, CATEGORY_COLORS } from '@/hooks/pages/useManageMaterials';
+import { useManageMaterials } from '@/hooks/pages/useManageMaterials';
 
 export default function ManageMaterials() {
     const {
@@ -49,7 +49,7 @@ export default function ManageMaterials() {
             {/* Materials Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredMaterials.map((material, index) => {
-                    const colors = CATEGORY_COLORS[material.kategori] || CATEGORY_COLORS['Diabetes'];
+                    const gradient = 'from-blue-500 to-cyan-500';
                     return (
                         <motion.div
                             key={material._id}
@@ -58,10 +58,10 @@ export default function ManageMaterials() {
                             transition={{ delay: index * 0.05 }}
                             className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow group"
                         >
-                            <div className={`h-2 bg-gradient-to-r ${colors.gradient}`} />
+                            <div className={`h-2 bg-gradient-to-r ${gradient}`} />
                             <div className="p-5">
                                 <div className="flex items-start justify-between mb-4">
-                                    <div className={`w-12 h-12 bg-gradient-to-br ${colors.gradient} rounded-xl flex items-center justify-center shadow-lg`}>
+                                    <div className={`w-12 h-12 bg-gradient-to-br ${gradient} rounded-xl flex items-center justify-center shadow-lg`}>
                                         <BookOpen size={24} className="text-white" />
                                     </div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -74,9 +74,6 @@ export default function ManageMaterials() {
                                     </div>
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-1">{material.judul}</h3>
-                                <span className={`inline-block px-3 py-1 ${colors.bg} ${colors.text} rounded-full text-xs font-bold`}>
-                                    {material.kategori}
-                                </span>
                                 <p className="text-sm text-gray-500 mt-3 line-clamp-2">{material.konten_teks}</p>
                             </div>
                         </motion.div>
@@ -100,12 +97,6 @@ export default function ManageMaterials() {
                     <div>
                         <label htmlFor="mat-judul" className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Judul</label>
                         <input id="mat-judul" type="text" value={formData.judul} onChange={(e) => setFormData({ ...formData, judul: e.target.value })} className="w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-700 font-medium focus:border-[#5bc0eb] focus:bg-white outline-none transition-all" autoComplete="off" required />
-                    </div>
-                    <div>
-                        <label htmlFor="mat-kategori" className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Kategori</label>
-                        <select id="mat-kategori" value={formData.kategori} onChange={(e) => setFormData({ ...formData, kategori: e.target.value })} className="w-full h-12 px-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-700 font-medium focus:border-[#5bc0eb] focus:bg-white outline-none transition-all">
-                            {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                        </select>
                     </div>
                     <div>
                         <label htmlFor="mat-konten" className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Konten</label>

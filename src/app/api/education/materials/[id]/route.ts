@@ -52,7 +52,7 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
 
         await connectDB();
         const { id } = await params;
-        const { judul, kategori, konten_teks, url_gambar } = await request.json();
+        const { judul, konten_teks, url_gambar } = await request.json();
 
         const material = await Material.findById(id);
 
@@ -64,7 +64,6 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
         }
 
         material.judul = judul || material.judul;
-        material.kategori = kategori || material.kategori;
         material.konten_teks = konten_teks || material.konten_teks;
         material.url_gambar = url_gambar || material.url_gambar;
 

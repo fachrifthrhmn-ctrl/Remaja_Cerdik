@@ -65,7 +65,7 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
 
         await connectDB();
         const { id } = await params;
-        const { nama, email, sekolah, usia } = await request.json();
+        const { nama, email, kelas, usia } = await request.json();
 
         const user = await User.findById(id);
 
@@ -78,7 +78,7 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
 
         user.nama = nama || user.nama;
         user.email = email || user.email;
-        user.sekolah = sekolah || user.sekolah;
+        user.kelas = kelas || user.kelas;
         user.usia = usia || user.usia;
 
         const updatedUser = await user.save();
@@ -88,7 +88,7 @@ export async function PUT(request: NextRequest, { params }: { params: Params }) 
             nama: updatedUser.nama,
             email: updatedUser.email,
             role: updatedUser.role,
-            sekolah: updatedUser.sekolah,
+            kelas: updatedUser.kelas,
             usia: updatedUser.usia,
         });
     } catch (error) {

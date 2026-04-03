@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Heart, ArrowRight, User, GraduationCap, School } from 'lucide-react';
+import { Eye, EyeOff, Heart, ArrowRight, User, GraduationCap, School, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import GuestRoute from '@/components/shared/GuestRoute';
 import { useRegisterForm } from '@/hooks/pages/useRegisterForm';
@@ -76,18 +76,28 @@ function RegisterForm() {
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <label htmlFor="reg-sekolah" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Sekolah</label>
-                            <input
-                                type="text"
-                                id="reg-sekolah"
-                                name="sekolah"
-                                value={formData.sekolah}
-                                onChange={handleChange}
-                                autoComplete="organization"
-                                className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-700 font-bold placeholder:text-slate-300 focus:border-emerald-500 focus:bg-white outline-none transition-all"
-                                placeholder="Asal Sekolah"
-                                required
-                            />
+                            <label htmlFor="reg-kelas" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Kelas</label>
+                            <div className="relative">
+                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                                    <School size={18} />
+                                </span>
+                                <select
+                                    id="reg-kelas"
+                                    name="kelas"
+                                    value={formData.kelas}
+                                    onChange={handleChange}
+                                    className="w-full h-14 pl-14 pr-6 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-700 font-bold focus:border-emerald-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                                    required
+                                >
+                                    <option value="" disabled>Pilih Kelas</option>
+                                    <option value="10">Kelas 10</option>
+                                    <option value="11">Kelas 11</option>
+                                    <option value="12">Kelas 12</option>
+                                </select>
+                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                                    <ChevronDown size={18} />
+                                </span>
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <label htmlFor="reg-usia" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Usia</label>

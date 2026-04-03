@@ -3,7 +3,7 @@ export interface User {
     nama: string;
     email: string;
     role: 'user' | 'admin';
-    sekolah?: string;
+    kelas?: string;
     usia?: number;
     token: string;
 }
@@ -12,7 +12,7 @@ export interface RegisterData {
     nama: string;
     email: string;
     password: string;
-    sekolah?: string;
+    kelas?: string;
     usia?: number;
 }
 

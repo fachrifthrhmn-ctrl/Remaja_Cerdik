@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
         await connectDB();
 
         const results = await Result.find({})
-            .populate('user_id', 'nama email sekolah')
+            .populate('user_id', 'nama email kelas')
             .populate('kuis_id', 'judul tipe')
             .sort({ tanggal_selesai: -1 });
 

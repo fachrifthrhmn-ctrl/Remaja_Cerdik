@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
                 nama: user.nama,
                 email: user.email,
                 role: user.role,
+                kelas: user.kelas,
                 token: generateToken(user._id.toString()),
             });
         } else {

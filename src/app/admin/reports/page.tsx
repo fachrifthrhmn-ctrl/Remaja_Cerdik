@@ -48,7 +48,7 @@ export default function ManageReports() {
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-100">
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Siswa</th>
-                                <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sekolah</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Kelas</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Kuis</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Skor</th>
@@ -70,7 +70,7 @@ export default function ManageReports() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600">{result.user_id?.sekolah}</td>
+                                    <td className="px-6 py-4 text-gray-600">{result.user_id?.kelas}</td>
                                     <td className="px-6 py-4 font-medium text-gray-800">{result.kuis_id?.judul}</td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${result.kuis_id?.tipe === 'pre-test'

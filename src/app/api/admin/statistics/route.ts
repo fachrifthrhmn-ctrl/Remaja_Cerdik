@@ -43,13 +43,13 @@ export async function GET(request: NextRequest) {
 
         // Get recent activity (last 5)
         const recentResults = await Result.find({})
-            .populate('user_id', 'nama email sekolah')
+            .populate('user_id', 'nama email kelas')
             .populate('kuis_id', 'judul tipe')
             .sort({ tanggal_selesai: -1 })
             .limit(5);
 
         const recentUsers = await User.find({ role: 'user' })
-            .select('nama email sekolah createdAt')
+            .select('nama email kelas createdAt')
             .sort({ createdAt: -1 })
             .limit(5);
 

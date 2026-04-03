@@ -16,7 +16,8 @@ import {
     LogOut,
     ChevronLeft,
     Heart,
-    Camera
+    Camera,
+    ChevronDown
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -30,11 +31,11 @@ export default function ProfileContent() {
     const [formData, setFormData] = useState({
         nama: user?.nama || '',
         email: user?.email || '',
-        sekolah: user?.sekolah || '',
+        kelas: user?.kelas || '',
         usia: user?.usia?.toString() || '',
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
@@ -51,11 +52,33 @@ export default function ProfileContent() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // In a real app, you would call an API to update the profile here
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        toast.success('Profil berhasil diperbarui!');
-        setIsEditing(false);
-        setLoading(false);
+        try {
+            const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const res = await fetch('/api/auth/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${savedUser.token}`,
+                },
+                body: JSON.stringify({
+                    nama: formData.nama,
+                    kelas: formData.kelas,
+                    usia: formData.usia,
+                }),
+            });
+
+            if (!res.ok) throw new Error('Gagal memperbarui profil');
+
+            const updatedUser = await res.json();
+            // Sync localStorage agar data terbaru tersimpan
+            localStorage.setItem('user', JSON.stringify({ ...savedUser, ...updatedUser }));
+            toast.success('Profil berhasil diperbarui!');
+            setIsEditing(false);
+        } catch {
+            toast.error('Gagal menyimpan perubahan. Coba lagi.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const isAdmin = user?.role === 'admin';
@@ -169,22 +192,32 @@ export default function ProfileContent() {
                                     {!isAdmin && (
                                         <>
                                             <div className="space-y-3">
-                                                <label htmlFor="profile-sekolah" className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-2">Sekolah</label>
+                                                <label htmlFor="profile-kelas" className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-2">Kelas / Instansi</label>
                                                 <div className="relative">
                                                     <School className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                                                    <input
-                                                        type="text"
-                                                        id="profile-sekolah"
-                                                        name="sekolah"
-                                                        value={formData.sekolah}
-                                                        onChange={handleChange}
-                                                        disabled={!isEditing}
-                                                        autoComplete="organization"
-                                                        className={`w-full h-14 border-2 rounded-2xl pl-12 pr-6 text-sm font-bold transition-all ${isEditing
-                                                            ? 'bg-white border-brand-blue ring-4 ring-blue-50'
-                                                            : 'bg-slate-50 border-transparent opacity-70'
-                                                            }`}
-                                                    />
+                                                    {isEditing ? (
+                                                        <>
+                                                            <select
+                                                                id="profile-kelas"
+                                                                name="kelas"
+                                                                value={formData.kelas}
+                                                                onChange={handleChange}
+                                                                className="w-full h-14 border-2 rounded-2xl pl-12 pr-10 text-sm font-bold transition-all appearance-none bg-white border-brand-blue ring-4 ring-blue-50 cursor-pointer outline-none"
+                                                            >
+                                                                <option value="" disabled>Pilih Kelas</option>
+                                                                <option value="10">Kelas 10</option>
+                                                                <option value="11">Kelas 11</option>
+                                                                <option value="12">Kelas 12</option>
+                                                            </select>
+                                                            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                                                                <ChevronDown size={18} />
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <div className="w-full h-14 bg-slate-50 border-2 border-transparent rounded-2xl pl-12 pr-6 flex items-center text-sm font-bold text-slate-700 opacity-70">
+                                                            {formData.kelas ? `Kelas ${formData.kelas}` : '-'}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
 

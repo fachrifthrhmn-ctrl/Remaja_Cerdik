@@ -2,7 +2,7 @@ export interface AdminUser {
     _id: string;
     nama: string;
     email: string;
-    sekolah: string;
+    kelas: string;
     usia: number;
     createdAt: string;
 }
@@ -20,14 +20,14 @@ export interface Statistics {
         _id: string;
         skor: number;
         tanggal_selesai: string;
-        user_id: { nama: string; email: string; sekolah: string };
+        user_id: { nama: string; email: string; kelas: string };
         kuis_id: { judul: string; tipe: string };
     }>;
     recentUsers: Array<{
         _id: string;
         nama: string;
         email: string;
-        sekolah: string;
+        kelas: string;
         createdAt: string;
     }>;
 }

@@ -2,7 +2,7 @@ export interface ReportResult {
     _id: string;
     skor: number;
     tanggal_selesai: string;
-    user_id: { _id: string; nama: string; email: string; sekolah: string };
+    user_id: { _id: string; nama: string; email: string; kelas: string };
     kuis_id: { judul: string; tipe: string };
 }
 

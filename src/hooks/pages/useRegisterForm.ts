@@ -12,7 +12,7 @@ export function useRegisterForm() {
         nama: '',
         email: '',
         password: '',
-        sekolah: '',
+        kelas: '',
         usia: '',
     });
 
@@ -28,7 +28,7 @@ export function useRegisterForm() {
                 nama: formData.nama,
                 email: formData.email,
                 password: formData.password,
-                sekolah: formData.sekolah,
+                kelas: formData.kelas,
                 usia: parseInt(formData.usia),
             });
             toast.success(`Akun berhasil dibuat! Selamat datang, ${userData.nama}!`);

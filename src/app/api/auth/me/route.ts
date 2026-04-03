@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
             nama: user.nama,
             email: user.email,
             role: user.role,
-            sekolah: user.sekolah,
+            kelas: user.kelas,
             usia: user.usia,
         });
     } catch (error) {

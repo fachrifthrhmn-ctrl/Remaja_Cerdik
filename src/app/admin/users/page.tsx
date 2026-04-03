@@ -5,7 +5,7 @@ import SearchInput from '@/components/shared/SearchInput';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import EmptyState from '@/components/shared/EmptyState';
 import StatCard from '@/components/shared/StatCard';
-import { Edit2, Trash2, Users, UserPlus, GraduationCap, Loader2 } from 'lucide-react';
+import { Edit2, Trash2, Users, UserPlus, GraduationCap, Loader2, ChevronDown } from 'lucide-react';
 import { useManageUsers } from '@/hooks/pages/useManageUsers';
 
 export default function ManageUsers() {
@@ -20,7 +20,7 @@ export default function ManageUsers() {
         handleSubmit, handleDelete, openEditModal,
     } = useManageUsers();
 
-    const schoolsCount = new Set(users.map(u => u.sekolah)).size;
+    const schoolsCount = new Set(users.map(u => u.kelas)).size;
     const newThisMonth = users.filter(u => {
         const created = new Date(u.createdAt);
         const now = new Date();
@@ -42,12 +42,12 @@ export default function ManageUsers() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <StatCard icon={Users} label="Total Siswa" value={users.length} iconBgColor="bg-blue-100" iconColor="text-blue-600" />
-                <StatCard icon={GraduationCap} label="Sekolah" value={schoolsCount} iconBgColor="bg-emerald-100" iconColor="text-emerald-600" delay={0.1} />
+                <StatCard icon={GraduationCap} label="Kelas" value={schoolsCount} iconBgColor="bg-emerald-100" iconColor="text-emerald-600" delay={0.1} />
                 <StatCard icon={UserPlus} label="Baru Bulan Ini" value={newThisMonth} iconBgColor="bg-purple-100" iconColor="text-purple-600" delay={0.2} />
             </div>
 
             {/* Search */}
-            <SearchInput value={search} onChange={setSearch} placeholder="Cari nama, email, atau sekolah..." />
+            <SearchInput value={search} onChange={setSearch} placeholder="Cari nama, email, atau kelas..." />
 
             {/* Users Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -56,7 +56,7 @@ export default function ManageUsers() {
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-100">
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Nama</th>
-                                <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Sekolah</th>
+                                <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Kelas</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Usia</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Terdaftar</th>
                                 <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -76,7 +76,7 @@ export default function ManageUsers() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600">{user.sekolah}</td>
+                                    <td className="px-6 py-4 text-gray-600">{user.kelas}</td>
                                     <td className="px-6 py-4">
                                         <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm font-medium">
                                             {user.usia} tahun
@@ -118,8 +118,18 @@ export default function ManageUsers() {
                         <input id="user-email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" autoComplete="email" required />
                     </div>
                     <div>
-                        <label htmlFor="user-sekolah" className="block text-sm font-bold text-gray-700 mb-1.5">Sekolah</label>
-                        <input id="user-sekolah" type="text" value={formData.sekolah} onChange={(e) => setFormData({ ...formData, sekolah: e.target.value })} className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" autoComplete="organization" required />
+                        <label htmlFor="user-kelas" className="block text-sm font-bold text-gray-700 mb-1.5">Kelas</label>
+                        <div className="relative">
+                            <select id="user-kelas" name="kelas" value={formData.kelas} onChange={(e) => setFormData({ ...formData, kelas: e.target.value })} className="w-full h-12 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none appearance-none cursor-pointer" required>
+                                <option value="" disabled>Pilih Kelas</option>
+                                <option value="10">Kelas 10</option>
+                                <option value="11">Kelas 11</option>
+                                <option value="12">Kelas 12</option>
+                            </select>
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                <ChevronDown size={18} />
+                            </span>
+                        </div>
                     </div>
                     <div>
                         <label htmlFor="user-usia" className="block text-sm font-bold text-gray-700 mb-1.5">Usia</label>

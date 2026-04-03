@@ -3,24 +3,10 @@
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, Calendar, Heart, Droplets, Apple } from 'lucide-react';
+import { ArrowLeft, BookOpen, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useMaterialById } from '@/hooks/queries/useMaterials';
 import LoadingScreen from '@/components/shared/LoadingScreen';
-
-const CATEGORY_COLORS: Record<string, { bg: string; text: string; iconBg: string }> = {
-    'Diabetes': { bg: 'bg-blue-50', text: 'text-blue-600', iconBg: 'from-blue-500 to-cyan-500' },
-    'Hipertensi': { bg: 'bg-rose-50', text: 'text-rose-600', iconBg: 'from-rose-500 to-pink-500' },
-    'Obesitas': { bg: 'bg-amber-50', text: 'text-amber-600', iconBg: 'from-amber-500 to-orange-500' },
-    'Jantung': { bg: 'bg-red-50', text: 'text-red-600', iconBg: 'from-red-500 to-rose-500' },
-};
-
-const CATEGORY_ICONS: Record<string, typeof Heart> = {
-    'Diabetes': Droplets,
-    'Hipertensi': Heart,
-    'Obesitas': Apple,
-    'Jantung': Heart,
-};
 
 export default function MaterialDetail({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
@@ -34,8 +20,7 @@ export default function MaterialDetail({ params }: { params: Promise<{ id: strin
 
     if (!material) return null;
 
-    const colors = CATEGORY_COLORS[material.kategori] || { bg: 'bg-slate-50', text: 'text-slate-600', iconBg: 'from-slate-500 to-gray-500' };
-    const CategoryIcon = CATEGORY_ICONS[material.kategori] || BookOpen;
+    const colors = { bg: 'bg-blue-50', text: 'text-blue-600', iconBg: 'from-blue-500 to-cyan-500' };
 
     return (
         <div className="max-w-7xl mx-auto px-6 py-12 space-y-12">
@@ -61,11 +46,11 @@ export default function MaterialDetail({ params }: { params: Promise<{ id: strin
                     <div className={`${colors.bg} rounded-3xl p-8 border border-white`}>
                         <div className="flex items-start gap-6">
                             <div className={`w-16 h-16 bg-gradient-to-br ${colors.iconBg} rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0`}>
-                                <CategoryIcon size={32} className="text-white" />
+                                <BookOpen size={32} className="text-white" />
                             </div>
                             <div className="flex-1">
                                 <span className={`inline-block px-3 py-1 ${colors.bg} ${colors.text} rounded-full text-xs font-black uppercase tracking-widest mb-2 border border-current/10`}>
-                                    {material.kategori}
+                                    Penyakit Tidak Menular
                                 </span>
                                 <h1 className="text-3xl font-black text-[#1e4d7b] mb-2">{material.judul}</h1>
                                 <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">

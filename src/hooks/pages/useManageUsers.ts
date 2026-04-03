@@ -10,7 +10,7 @@ export function useManageUsers() {
     const { search, setSearch, debouncedSearch } = useDebounceSearch();
     const [showModal, setShowModal] = useState(false);
     const [editUser, setEditUser] = useState<AdminUser | null>(null);
-    const [formData, setFormData] = useState({ nama: '', email: '', sekolah: '', usia: '' });
+    const [formData, setFormData] = useState({ nama: '', email: '', kelas: '', usia: '' });
 
     const { data: users = [], isLoading } = useUsers();
     const updateMutation = useUpdateUser();
@@ -32,14 +32,14 @@ export function useManageUsers() {
 
     const openEditModal = (user: AdminUser) => {
         setEditUser(user);
-        setFormData({ nama: user.nama, email: user.email, sekolah: user.sekolah, usia: String(user.usia) });
+        setFormData({ nama: user.nama, email: user.email, kelas: user.kelas, usia: String(user.usia) });
         setShowModal(true);
     };
 
     const filteredUsers = users.filter(u =>
         u.nama.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         u.email.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        u.sekolah.toLowerCase().includes(debouncedSearch.toLowerCase())
+        u.kelas.toLowerCase().includes(debouncedSearch.toLowerCase())
     );
 
     const adminCount = users.length;
