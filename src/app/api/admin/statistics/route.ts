@@ -20,12 +20,14 @@ export async function GET(request: NextRequest) {
 
         await connectDB();
 
-        // Count totals
-        const totalUsers = await User.countDocuments({ role: 'user' });
-        const totalAdmins = await User.countDocuments({ role: 'admin' });
-        const totalMaterials = await Material.countDocuments({});
-        const totalQuizzes = await Quiz.countDocuments({});
-        const totalAttempts = await Result.countDocuments({});
+        // Count totals in parallel
+        const [totalUsers, totalAdmins, totalMaterials, totalQuizzes, totalAttempts] = await Promise.all([
+            User.countDocuments({ role: 'user' }),
+            User.countDocuments({ role: 'admin' }),
+            Material.countDocuments({}),
+            Quiz.countDocuments({}),
+            Result.countDocuments({})
+        ]);
 
         // Calculate average score
         const scoreAggregate = await Result.aggregate([

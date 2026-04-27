@@ -5,6 +5,7 @@ export interface User {
     role: 'user' | 'admin';
     kelas?: string;
     usia?: number;
+    jenis_kelamin?: string;
     token: string;
 }
 
@@ -14,6 +15,7 @@ export interface RegisterData {
     password: string;
     kelas?: string;
     usia?: number;
+    jenis_kelamin?: string;
 }
 
 export interface AuthContextType {

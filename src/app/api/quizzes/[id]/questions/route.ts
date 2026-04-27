@@ -20,9 +20,22 @@ export async function GET(request: NextRequest, { params }: { params: Params }) 
 
         await connectDB();
         const { id } = await params;
+        
+        const quiz = await Quiz.findById(id);
+        if (!quiz) {
+            return NextResponse.json({ message: 'Quiz not found' }, { status: 404 });
+        }
+        
+        let targetKuisId = id;
+        if (quiz.tipe === 'post-test') {
+            const preTest = await Quiz.findOne({ tipe: 'pre-test' });
+            if (preTest) {
+                targetKuisId = preTest._id.toString();
+            }
+        }
 
         // Exclude kunci_jawaban for security
-        const questions = await Question.find({ kuis_id: id }).select('-kunci_jawaban');
+        const questions = await Question.find({ kuis_id: targetKuisId }).select('-kunci_jawaban');
 
         return NextResponse.json(questions);
     } catch (error) {

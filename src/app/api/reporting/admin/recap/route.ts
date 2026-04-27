@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Result from '@/models/Result';
+import '@/models/User';
+import '@/models/Quiz';
+import '@/models/Question';
 import { requireAdmin } from '@/lib/auth';
 
 // GET /api/reporting/admin/recap - Get all students results
@@ -18,8 +21,9 @@ export async function GET(request: NextRequest) {
         await connectDB();
 
         const results = await Result.find({})
-            .populate('user_id', 'nama email kelas')
+            .populate('user_id', 'nama email kelas usia jenis_kelamin')
             .populate('kuis_id', 'judul tipe')
+            .populate('detail_jawaban_user.soal_id', 'pertanyaan pilihan_ganda')
             .sort({ tanggal_selesai: -1 });
 
         return NextResponse.json(results);

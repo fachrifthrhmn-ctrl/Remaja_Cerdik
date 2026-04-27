@@ -7,15 +7,17 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export interface JWTPayload {
     id: string;
+    role: string;
+    nama?: string;
     iat: number;
     exp: number;
 }
 
-export function generateToken(id: string): string {
+export function generateToken(id: string, role: string, nama?: string): string {
     const options: SignOptions = {
-        expiresIn: (process.env.JWT_EXPIRE || '30d') as jwt.SignOptions['expiresIn'],
+        expiresIn: (process.env.JWT_EXPIRE || '30m') as jwt.SignOptions['expiresIn'],
     };
-    return jwt.sign({ id }, JWT_SECRET, options);
+    return jwt.sign({ id, role, nama }, JWT_SECRET, options);
 }
 
 export function verifyToken(token: string): JWTPayload | null {
@@ -49,8 +51,11 @@ export async function getUserFromRequest(request: NextRequest): Promise<IUser | 
         return null;
     }
 
-    await connectDB();
-    const user = await User.findById(decoded.id);
+    const user = {
+        _id: decoded.id,
+        role: decoded.role,
+        nama: decoded.nama,
+    } as unknown as IUser;
 
     return user;
 }

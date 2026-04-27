@@ -9,6 +9,7 @@ export interface IUser extends Document {
     role: 'user' | 'admin';
     kelas?: string;
     usia?: number;
+    jenis_kelamin?: string;
     createdAt: Date;
     matchPassword(enteredPassword: string): Promise<boolean>;
 }
@@ -44,11 +45,17 @@ const userSchema = new Schema<IUser>({
     usia: {
         type: Number,
     },
+    jenis_kelamin: {
+        type: String,
+        enum: ['Laki-laki', 'Perempuan'],
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
+
+userSchema.index({ role: 1 });
 
 // Encrypt password using bcrypt - Mongoose 8.x async hooks don't use next()
 userSchema.pre('save', async function () {

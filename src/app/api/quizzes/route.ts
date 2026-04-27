@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
         await connectDB();
         const quizzes = await Quiz.find({}).sort({ createdAt: -1 });
 
-        return NextResponse.json(quizzes);
+        return NextResponse.json(quizzes, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+            }
+        });
     } catch (error) {
         console.error('Get quizzes error:', error);
         return NextResponse.json(

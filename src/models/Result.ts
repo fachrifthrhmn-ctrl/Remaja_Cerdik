@@ -44,6 +44,9 @@ const resultSchema = new Schema<IResult>({
     },
 });
 
+resultSchema.index({ user_id: 1 });
+resultSchema.index({ user_id: 1, tanggal_selesai: -1 });
+
 const Result: Model<IResult> = mongoose.models.Result || mongoose.model<IResult>('Result', resultSchema);
 
 export default Result;

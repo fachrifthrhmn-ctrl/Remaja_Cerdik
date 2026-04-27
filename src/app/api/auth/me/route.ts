@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
 import { getUserFromRequest } from '@/lib/auth';
 
 // GET /api/auth/me - Verify token and return current user
 export async function GET(request: NextRequest) {
     try {
-        const user = await getUserFromRequest(request);
+        const authUser = await getUserFromRequest(request);
 
-        if (!user) {
+        if (!authUser) {
             return NextResponse.json(
                 { message: 'Not authorized, token failed' },
                 { status: 401 }
+            );
+        }
+
+        await connectDB();
+        const user = await User.findById(authUser._id);
+
+        if (!user) {
+            return NextResponse.json(
+                { message: 'User not found' },
+                { status: 404 }
             );
         }
 

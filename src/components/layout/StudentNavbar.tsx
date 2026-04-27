@@ -137,7 +137,27 @@ const StudentNavbar = () => {
                                         {link.label}
                                     </Link>
                                 ))}
-                                <div className="pt-4 border-t border-slate-50">
+                                <div className="pt-4 border-t border-slate-50 space-y-4">
+                                    {user ? (
+                                        <Link
+                                            href="/profile"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 text-[#1e4d7b]"
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-brand-blue flex items-center justify-center text-white text-xs font-black">
+                                                {user.nama?.charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className="text-sm font-black">{user.nama}</span>
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href="/login"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex items-center gap-2 text-[#1e4d7b] font-bold text-sm"
+                                        >
+                                            <User size={18} /> Login
+                                        </Link>
+                                    )}
                                     <button
                                         onClick={handleLogout}
                                         className="flex items-center gap-2 text-rose-500 font-bold text-sm"

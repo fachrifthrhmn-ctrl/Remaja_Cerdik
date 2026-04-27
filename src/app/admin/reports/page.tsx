@@ -4,9 +4,10 @@ import Modal from '@/components/shared/Modal';
 import SearchInput from '@/components/shared/SearchInput';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import StatCard from '@/components/shared/StatCard';
-import { BarChart3, Calendar, Award, TrendingUp, RotateCcw } from 'lucide-react';
+import { BarChart3, Calendar, Award, TrendingUp, RotateCcw, Download } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useManageReports } from '@/hooks/pages/useManageReports';
+import { downloadReportsExcel } from '@/lib/exportExcel';
 
 export default function ManageReports() {
     const {
@@ -38,8 +39,19 @@ export default function ManageReports() {
                 <StatCard icon={TrendingUp} label="Lulus (≥70%)" value={passCount} iconBgColor="bg-emerald-100" iconColor="text-emerald-600" delay={0.2} />
             </div>
 
-            {/* Search */}
-            <SearchInput value={search} onChange={setSearch} placeholder="Cari nama siswa atau kuis..." />
+            {/* Search and Export */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                <div className="w-full sm:flex-1">
+                    <SearchInput value={search} onChange={setSearch} placeholder="Cari nama siswa atau kuis..." />
+                </div>
+                <button
+                    onClick={() => downloadReportsExcel(filteredResults)}
+                    className="flex items-center gap-2 px-6 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] w-full sm:w-auto justify-center flex-shrink-0"
+                >
+                    <Download size={20} />
+                    <span>Export ke Excel</span>
+                </button>
+            </div>
 
             {/* Results Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">

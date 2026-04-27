@@ -286,23 +286,39 @@ export default function ProfileContent() {
                         </div>
 
                         {!isAdmin && (
-                            <div className="play-card p-8 bg-blue-50 border-2 border-blue-100 relative overflow-hidden">
-                                <Heart className="text-brand-blue mb-4" fill="currentColor" size={32} />
-                                <h3 className="text-xl font-black text-[#1e4d7b]">Progress Belajar</h3>
-                                <p className="text-xs font-bold text-blue-800/60 mt-2 italic">Kamu hebat! Teruslah belajar untuk masa depan cerah.</p>
+                            <>
+                                <div className="play-card p-8 bg-blue-50 border-2 border-blue-100 relative overflow-hidden">
+                                    <Heart className="text-brand-blue mb-4" fill="currentColor" size={32} />
+                                    <h3 className="text-xl font-black text-[#1e4d7b]">Progress Belajar</h3>
+                                    <p className="text-xs font-bold text-blue-800/60 mt-2 italic">Kamu hebat! Teruslah belajar untuk masa depan cerah.</p>
 
-                                <div className="mt-8 space-y-4 relative z-10">
-                                    <div className="flex justify-between items-center text-[10px] font-black uppercase text-[#1e4d7b]/40 tracking-widest">
-                                        <span>Materi Selesai</span>
-                                        <span>85%</span>
+                                    <div className="mt-8 space-y-4 relative z-10">
+                                        <div className="flex justify-between items-center text-[10px] font-black uppercase text-[#1e4d7b]/40 tracking-widest">
+                                            <span>Materi Selesai</span>
+                                            <span>85%</span>
+                                        </div>
+                                        <div className="h-4 w-full bg-white rounded-full p-1 border border-blue-100">
+                                            <div className="h-full bg-brand-blue rounded-full w-[85%] shadow-inner shadow-black/5" />
+                                        </div>
                                     </div>
-                                    <div className="h-4 w-full bg-white rounded-full p-1 border border-blue-100">
-                                        <div className="h-full bg-brand-blue rounded-full w-[85%] shadow-inner shadow-black/5" />
-                                    </div>
+
+                                    <Sparkles className="absolute -bottom-4 -right-4 w-24 h-24 text-blue-100/50" />
                                 </div>
 
-                                <Sparkles className="absolute -bottom-4 -right-4 w-24 h-24 text-blue-100/50" />
-                            </div>
+                                <div className="play-card p-8 bg-amber-50 border-2 border-amber-100 relative overflow-hidden">
+                                    <h3 className="text-xl font-black text-amber-900 mb-2">Kendala Belajar?</h3>
+                                    <p className="text-xs font-bold text-amber-800/60 mb-6 leading-relaxed">Jika progres belajarmu hilang atau ada kendala sistem, segera hubungi Admin melalui form berikut.</p>
+                                    
+                                    <a 
+                                        href="#" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="w-full h-14 bg-white hover:bg-amber-100 border-2 border-amber-200 rounded-2xl flex items-center justify-center text-amber-600 font-black uppercase text-xs tracking-widest transition-all shadow-sm"
+                                    >
+                                        Buka Google Form
+                                    </a>
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>

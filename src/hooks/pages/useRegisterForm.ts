@@ -13,7 +13,9 @@ export function useRegisterForm() {
         email: '',
         password: '',
         kelas: '',
+        jurusan: '',
         usia: '',
+        jenis_kelamin: '',
     });
 
     const { register } = useAuth();
@@ -24,12 +26,17 @@ export function useRegisterForm() {
         setLoading(true);
 
         try {
+            const finalKelas = formData.kelas === '11' && formData.jurusan 
+                ? `${formData.kelas} ${formData.jurusan}` 
+                : formData.kelas;
+
             const userData = await register({
                 nama: formData.nama,
                 email: formData.email,
                 password: formData.password,
-                kelas: formData.kelas,
+                kelas: finalKelas,
                 usia: parseInt(formData.usia),
+                jenis_kelamin: formData.jenis_kelamin,
             });
             toast.success(`Akun berhasil dibuat! Selamat datang, ${userData.nama}!`);
             router.push('/student/dashboard');

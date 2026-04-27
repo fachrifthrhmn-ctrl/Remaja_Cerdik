@@ -7,6 +7,7 @@ import { ArrowLeft, BookOpen, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { useMaterialById } from '@/hooks/queries/useMaterials';
 import LoadingScreen from '@/components/shared/LoadingScreen';
+import ReactMarkdown from 'react-markdown';
 
 export default function MaterialDetail({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
@@ -78,10 +79,10 @@ export default function MaterialDetail({ params }: { params: Promise<{ id: strin
                             <BookOpen size={24} className={colors.text} />
                             Isi Materi
                         </h2>
-                        <div className="prose prose-lg max-w-none">
-                            <div className="text-slate-700 leading-relaxed whitespace-pre-wrap text-base">
+                        <div className="max-w-none text-slate-700 leading-relaxed text-base [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-[#1e4d7b] [&_h3]:mt-8 [&_h3]:mb-4 [&_p]:mb-4 [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:mb-6 [&_li]:mb-1 [&_hr]:my-8 [&_hr]:border-slate-200 [&_strong]:font-bold [&_strong]:text-slate-900 [&_em]:italic">
+                            <ReactMarkdown>
                                 {material.konten_teks}
-                            </div>
+                            </ReactMarkdown>
                         </div>
                     </div>
                 </motion.div>

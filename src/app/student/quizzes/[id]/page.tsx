@@ -3,7 +3,7 @@
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle, XCircle, Award, Trophy, Brain, ClipboardList, HelpCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Award, Trophy, Brain, ClipboardList, HelpCircle, Timer, AlertTriangle, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import LoadingScreen from '@/components/shared/LoadingScreen';
 import { useTakeQuiz } from '@/hooks/pages/useTakeQuiz';
@@ -16,7 +16,8 @@ export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }
         quiz, questions,
         loadingQuiz, isQuizError,
         submitMutation,
-        handleAnswer, handleSubmit,
+        handleAnswer, handleSubmit, handleAutoSubmit,
+        quizStarted, startQuiz, timeLeft
     } = useTakeQuiz(resolvedParams.id);
 
     if (loadingQuiz) return <LoadingScreen message="Memuat kuis..." color="border-amber-500" />;
@@ -86,29 +87,98 @@ export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }
         );
     }
 
-    // Quiz screen
     const isPreTest = quiz.tipe === 'pre-test';
 
+    // Start Screen
+    if (!quizStarted) {
+        return (
+            <div className="max-w-2xl mx-auto px-6 py-12">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-3xl p-10 text-center shadow-xl border border-slate-100"
+                >
+                    <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 shadow-xl ${isPreTest
+                        ? 'bg-gradient-to-br from-blue-500 to-cyan-500'
+                        : 'bg-gradient-to-br from-amber-500 to-orange-500'
+                        }`}>
+                        {isPreTest ? <Brain size={48} className="text-white" /> : <ClipboardList size={48} className="text-white" />}
+                    </div>
+
+                    <h1 className="text-3xl font-black text-[#1e4d7b] mb-2">{quiz.judul}</h1>
+                    <p className="text-slate-500 font-medium mb-8">{quiz.deskripsi}</p>
+
+                    <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 mb-8 text-left">
+                        <h3 className="font-black text-amber-800 flex items-center gap-2 mb-2">
+                            <AlertTriangle size={20} /> Perhatian Sebelum Memulai
+                        </h3>
+                        <ul className="list-disc pl-5 text-sm text-amber-700 font-medium space-y-2">
+                            <li>Waktu pengerjaan kuis ini adalah <strong>10 menit</strong>.</li>
+                            <li>Waktu akan terus berjalan setelah Anda menekan tombol mulai.</li>
+                            <li>Jika waktu habis, jawaban akan tersimpan dan dikumpulkan secara otomatis.</li>
+                            <li>Jika Anda keluar di tengah pengerjaan, nilai akan disimpan sesuai progres saat itu.</li>
+                        </ul>
+                    </div>
+
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => router.back()}
+                            className="flex-1 py-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            onClick={() => {
+                                if (window.confirm('Apakah Anda sudah siap? Waktu 10 menit akan mulai berjalan.')) {
+                                    startQuiz();
+                                }
+                            }}
+                            className={`flex-1 py-4 rounded-xl font-black text-white transition-all shadow-lg hover:scale-105 active:scale-95 ${isPreTest
+                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 shadow-blue-500/30'
+                                : 'bg-gradient-to-r from-amber-500 to-orange-500 shadow-amber-500/30'
+                                }`}
+                        >
+                            Mulai Kuis
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
+        );
+    }
+
+    // Format timer
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    const isTimeRunningOut = timeLeft <= 60; // Less than 1 minute
+
+    // Quiz screen
     return (
         <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
-            {/* Header */}
+            {/* Header / Timer Banner */}
             <motion.div
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between"
+                className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl shadow-sm border border-slate-100 sticky top-4 z-50"
             >
                 <button
-                    onClick={() => router.back()}
-                    className="flex items-center gap-2 text-slate-500 hover:text-[#1e4d7b] transition-colors font-bold"
+                    onClick={() => {
+                        if (window.confirm('Anda yakin ingin keluar? Progress jawaban Anda saat ini akan langsung dikumpulkan sebagai nilai akhir.')) {
+                            handleAutoSubmit();
+                        }
+                    }}
+                    className="flex items-center gap-2 text-rose-500 hover:text-rose-600 transition-colors font-bold bg-rose-50 px-4 py-2 rounded-xl"
                 >
-                    <ArrowLeft size={20} /> Kembali
+                    <LogOut size={20} /> Keluar & Simpan
                 </button>
-                <span className={`px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest ${isPreTest
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-amber-100 text-amber-700'
+
+                <div className={`flex items-center gap-3 px-6 py-2 rounded-xl border-2 font-black text-lg ${isTimeRunningOut
+                    ? 'border-red-500 text-red-600 bg-red-50 animate-pulse'
+                    : 'border-slate-200 text-slate-700 bg-slate-50'
                     }`}>
-                    {quiz.tipe}
-                </span>
+                    <Timer size={24} className={isTimeRunningOut ? 'animate-bounce' : ''} />
+                    {timeString}
+                </div>
             </motion.div>
 
             {/* Quiz Info Card */}
@@ -118,14 +188,22 @@ export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }
                 className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100"
             >
                 <div className="flex items-start gap-5">
-                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${isPreTest
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isPreTest
                         ? 'bg-gradient-to-br from-blue-500 to-cyan-500'
                         : 'bg-gradient-to-br from-amber-500 to-orange-500'
                         }`}>
                         {isPreTest ? <Brain size={28} className="text-white" /> : <ClipboardList size={28} className="text-white" />}
                     </div>
                     <div className="flex-1">
-                        <h1 className="text-2xl font-black text-[#1e4d7b] mb-2">{quiz.judul}</h1>
+                        <div className="flex items-center gap-3 mb-2">
+                            <h1 className="text-2xl font-black text-[#1e4d7b]">{quiz.judul}</h1>
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isPreTest
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'bg-amber-100 text-amber-700'
+                                }`}>
+                                {quiz.tipe}
+                            </span>
+                        </div>
                         <p className="text-slate-500 font-medium">{quiz.deskripsi}</p>
                     </div>
                 </div>
@@ -153,12 +231,6 @@ export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }
                 <div className="bg-slate-50 rounded-3xl p-12 text-center border-2 border-dashed border-slate-200">
                     <HelpCircle size={48} className="mx-auto text-slate-300 mb-4" />
                     <p className="text-slate-500 font-bold">Belum ada soal untuk kuis ini</p>
-                    <button
-                        onClick={() => router.back()}
-                        className="mt-4 text-[#1e4d7b] font-bold text-sm underline"
-                    >
-                        Kembali ke daftar kuis
-                    </button>
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -216,8 +288,8 @@ export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    onClick={handleSubmit}
-                    disabled={submitMutation.isPending || Object.keys(answers).length !== questions.length}
+                    onClick={() => handleSubmit(false)}
+                    disabled={submitMutation.isPending}
                     className={`w-full py-5 rounded-2xl font-black text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-xl ${isPreTest
                         ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600'
                         : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600'
@@ -226,7 +298,7 @@ export default function TakeQuiz({ params }: { params: Promise<{ id: string }> }
                     {submitMutation.isPending ? (
                         <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
                     ) : (
-                        <>Kirim Jawaban ({Object.keys(answers).length}/{questions.length})</>
+                        <>Kirim Jawaban Akhir ({Object.keys(answers).length}/{questions.length})</>
                     )}
                 </motion.button>
             )}

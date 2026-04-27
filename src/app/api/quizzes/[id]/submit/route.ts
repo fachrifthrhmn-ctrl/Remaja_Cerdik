@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Question from '@/models/Question';
 import Result from '@/models/Result';
+import Quiz from '@/models/Quiz';
 import { requireAuth } from '@/lib/auth';
 
 type Params = Promise<{ id: string }>;
@@ -28,15 +29,37 @@ export async function POST(request: NextRequest, { params }: { params: Params })
         const { id } = await params;
         const { answers } = await request.json() as { answers: AnswerSubmission[] };
 
-        // Validate answers array
-        if (!answers || !Array.isArray(answers) || answers.length === 0) {
+        // Validate answers array (allow empty if they didn't answer anything)
+        if (!answers || !Array.isArray(answers)) {
             return NextResponse.json(
                 { message: 'Answers array is required' },
                 { status: 400 }
             );
         }
 
-        const questions = await Question.find({ kuis_id: id });
+        // Check if user already submitted this quiz
+        const existingResult = await Result.findOne({ user_id: user._id, kuis_id: id });
+        if (existingResult) {
+            return NextResponse.json(
+                { message: 'Anda sudah mengerjakan kuis ini sebelumnya.' },
+                { status: 400 }
+            );
+        }
+
+        const quiz = await Quiz.findById(id);
+        if (!quiz) {
+            return NextResponse.json({ message: 'Quiz not found' }, { status: 404 });
+        }
+        
+        let targetKuisId = id;
+        if (quiz.tipe === 'post-test') {
+            const preTest = await Quiz.findOne({ tipe: 'pre-test' });
+            if (preTest) {
+                targetKuisId = preTest._id.toString();
+            }
+        }
+
+        const questions = await Question.find({ kuis_id: targetKuisId });
 
         if (!questions || questions.length === 0) {
             return NextResponse.json(
@@ -47,13 +70,7 @@ export async function POST(request: NextRequest, { params }: { params: Params })
 
         const totalQuestions = questions.length;
 
-        // Check if user answered all questions
-        if (answers.length !== totalQuestions) {
-            return NextResponse.json(
-                { message: `You must answer all ${totalQuestions} questions. You provided ${answers.length} answers.` },
-                { status: 400 }
-            );
-        }
+        // Validasi dihapus agar user bisa mengumpulkan / auto-submit meskipun ada soal yang belum dijawab.
 
         // Create map for faster lookup
         const questionMap: Record<string, number> = {};

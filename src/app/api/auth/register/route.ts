@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
 
-        const { nama, email, password, role, kelas, usia } = await request.json();
+        const { nama, email, password, role, kelas, usia, jenis_kelamin } = await request.json();
 
         // Check if user exists
         const userExists = await User.findOne({ email });
@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
             role: role || 'user',
             kelas,
             usia,
+            jenis_kelamin,
         });
 
         if (user) {
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
                 email: user.email,
                 role: user.role,
                 kelas: user.kelas,
-                token: generateToken(user._id.toString()),
+                token: generateToken(user._id.toString(), user.role, user.nama),
             }, { status: 201 });
         } else {
             return NextResponse.json(

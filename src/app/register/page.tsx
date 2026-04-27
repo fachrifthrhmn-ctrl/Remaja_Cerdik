@@ -99,6 +99,45 @@ function RegisterForm() {
                                 </span>
                             </div>
                         </div>
+
+                        {formData.kelas === '11' && (
+                            <div className="space-y-2">
+                                <label htmlFor="reg-jurusan" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Jurusan</label>
+                                <div className="relative">
+                                    <select
+                                        id="reg-jurusan"
+                                        name="jurusan"
+                                        value={formData.jurusan}
+                                        onChange={handleChange}
+                                        className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-700 font-bold focus:border-emerald-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                                        required={formData.kelas === '11'}
+                                    >
+                                        <option value="" disabled>Pilih Jurusan</option>
+                                        <optgroup label="IPA">
+                                            <option value="IPA 1">IPA 1</option>
+                                            <option value="IPA 2">IPA 2</option>
+                                            <option value="IPA 3">IPA 3</option>
+                                            <option value="IPA 4">IPA 4</option>
+                                            <option value="IPA 5">IPA 5</option>
+                                            <option value="IPA 6">IPA 6</option>
+                                        </optgroup>
+                                        <optgroup label="IPS">
+                                            <option value="IPS 1">IPS 1</option>
+                                            <option value="IPS 2">IPS 2</option>
+                                            <option value="IPS 3">IPS 3</option>
+                                            <option value="IPS 4">IPS 4</option>
+                                        </optgroup>
+                                        <optgroup label="Bahasa">
+                                            <option value="Bahasa 1">Bahasa 1</option>
+                                        </optgroup>
+                                    </select>
+                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                                        <ChevronDown size={18} />
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <label htmlFor="reg-usia" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Usia</label>
                             <input
@@ -114,6 +153,27 @@ function RegisterForm() {
                                 min="10"
                                 max="25"
                             />
+                        </div>
+
+                        <div className={`space-y-2 ${formData.kelas !== '11' ? 'col-span-2' : ''}`}>
+                            <label htmlFor="reg-jk" className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Jenis Kelamin</label>
+                            <div className="relative">
+                                <select
+                                    id="reg-jk"
+                                    name="jenis_kelamin"
+                                    value={formData.jenis_kelamin}
+                                    onChange={handleChange}
+                                    className="w-full h-14 px-6 bg-slate-50 border-2 border-slate-100 rounded-2xl text-slate-700 font-bold focus:border-emerald-500 focus:bg-white outline-none transition-all appearance-none cursor-pointer"
+                                    required
+                                >
+                                    <option value="" disabled>Pilih Gender</option>
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 pointer-events-none">
+                                    <ChevronDown size={18} />
+                                </span>
+                            </div>
                         </div>
                     </div>
 

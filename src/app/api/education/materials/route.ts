@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
         await connectDB();
         const materials = await Material.find({}).sort({ tanggal_upload: -1 });
 
-        return NextResponse.json(materials);
+        return NextResponse.json(materials, {
+            headers: {
+                'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+            }
+        });
     } catch (error) {
         console.error('Get materials error:', error);
         return NextResponse.json(

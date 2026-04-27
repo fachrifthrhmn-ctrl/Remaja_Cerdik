@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
                 email: user.email,
                 role: user.role,
                 kelas: user.kelas,
-                token: generateToken(user._id.toString()),
+                token: generateToken(user._id.toString(), user.role, user.nama),
             });
         } else {
             return NextResponse.json(
