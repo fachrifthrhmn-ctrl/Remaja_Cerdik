@@ -45,7 +45,7 @@ export default function ManageReports() {
                     <SearchInput value={search} onChange={setSearch} placeholder="Cari nama siswa atau kuis..." />
                 </div>
                 <button
-                    onClick={() => downloadReportsExcel(filteredResults)}
+                    onClick={() => downloadReportsExcel(results)}
                     className="flex items-center gap-2 px-6 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] w-full sm:w-auto justify-center flex-shrink-0"
                 >
                     <Download size={20} />
